@@ -1,6 +1,6 @@
 # Simple Todo App
 
-This is the full stack app based on the next technologies:
+This is the full stack app (demo only) based on the next technologies:
 
 1. React/Redux-Toolkit
 2. AdonisJs
@@ -10,18 +10,14 @@ This is the full stack app based on the next technologies:
 6. Adminer
 
 ## Setup
-
-Use this command to deploy in prod mode
+Migration command is included.
+Use this command to deploy in prod mode.
+Rename .env.example -> .env in root and "server" folder. 
 
 ```bash
 docker-compose up --build
 ```
 
-### Migrations
-
-Migration command is included.
-
-### Development mode
 For dev mode use next:
 
 ```
