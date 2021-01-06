@@ -1,0 +1,86 @@
+version: "3"
+
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
+    container_name: todo-app-client
+    command: serve -s build -l 3000
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      simple-todo-app-network:
+
+  server:
+    build: ./server
+    env_file:
+      - .env
+    environment:
+      - HOST=${HOST}
+      - PORT=${PORT}
+      - NODE_ENV=${NODE_ENV}
+      - APP_URL=${APP_URL}
+      - CACHE_VIEWS=${CACHE_VIEWS}
+      - APP_KEY=${APP_KEY}
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - SESSION_DRIVER=${SESSION_DRIVER}
+      - HASH_DRIVER=${HASH_DRIVER}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    command: sh -c 'sh wait-for.sh db:5432 -- npm run migrate && npm run start'
+    restart: unless-stopped
+    ports:
+      - "${PORT}:${PORT}"
+    container_name: todo-app-server
+    depends_on:
+      - db
+    networks:
+      simple-todo-app-network:
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: todo-app-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf.prod:/etc/nginx/conf.d/nginx.conf
+    depends_on:
+      - client
+      - server
+    networks:
+      simple-todo-app-network:
+
+  db:
+    image: postgres:11.2-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    container_name: todo-app-db
+    volumes:
+      - ./pddata:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    networks:
+      simple-todo-app-network:
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    container_name: todo-app-adminer
+    ports:
+      - "8080:8080"
+    networks:
+      simple-todo-app-network:
+
+networks:
+  simple-todo-app-network:
+    driver: bridge

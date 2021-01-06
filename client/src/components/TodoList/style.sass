@@ -1,0 +1,13 @@
+.item
+  &-enter
+    opacity: 0
+    &-active
+      opacity: 1
+      transition: opacity 500ms ease-in
+  &-exit
+    opacity: 1
+    background-color: #ff8a80
+    &-active
+      opacity: 0
+      transform: translateX(-100%)
+      transition: all 500ms ease-in

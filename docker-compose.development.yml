@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    command: yarn start
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./client/src:/usr/src/app/src
+
+  server:
+    command: sh -c 'sh wait-for.sh db:5432 -- npm i && npm run migrate && adonis serve --dev'
+    environment:
+      - POSTGRES_DB=dev_adonis
+    volumes:
+      - ./server:/usr/src/app/
+
+  nginx:
+    volumes:
+      - ./nginx/nginx.conf.dev:/etc/nginx/conf.d/nginx.conf
+
+  db:
+    environment:
+      - POSTGRES_DB=dev_adonis
+    volumes:
+      - ./pddevdata:/var/lib/postgresql/data
+
+
+  dev:
+    image: node:12-alpine
+    container_name: todo-app-dev
+    volumes:
+      - .:/usr/src/service/
+    working_dir: /usr/src/service/
+    command: sh -c "npm install"
+
